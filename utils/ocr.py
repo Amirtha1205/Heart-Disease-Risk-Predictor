@@ -1,29 +1,13 @@
 import os
-
-# Reduce CPU memory/thread usage
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-
-import torch
-
-torch.set_num_threads(1)
-
-import easyocr
 import fitz
-
-
-# Initialize EasyOCR only once
-reader = easyocr.Reader(
-    ['en'],
-    gpu=False,
-    verbose=False
-)
+import pytesseract
+from PIL import Image
 
 
 def read_report(file_path):
     """
     Extract text from an image or PDF medical report.
+    Uses Tesseract OCR for lightweight deployment.
     """
 
     extracted_text = ""
@@ -49,15 +33,15 @@ def read_report(file_path):
                 pix.save(temp_image)
 
                 try:
+                    image = Image.open(temp_image)
 
-                    result = reader.readtext(
-                        temp_image,
-                        detail=0,
-                        paragraph=True
+                    text = pytesseract.image_to_string(
+                        image,
+                        config="--psm 6"
                     )
 
-                    if result:
-                        extracted_text += "\n".join(result) + "\n"
+                    if text:
+                        extracted_text += text + "\n"
 
                 finally:
 
@@ -69,14 +53,12 @@ def read_report(file_path):
         # Image file
         else:
 
-            result = reader.readtext(
-                file_path,
-                detail=0,
-                paragraph=True
-            )
+            image = Image.open(file_path)
 
-            if result:
-                extracted_text = "\n".join(result)
+            extracted_text = pytesseract.image_to_string(
+                image,
+                config="--psm 6"
+            )
 
     except Exception as e:
 
