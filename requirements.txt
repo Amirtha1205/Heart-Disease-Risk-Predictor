@@ -7,5 +7,5 @@ reportlab==5.0.1
 Pillow==12.3.0
 opencv-python-headless==5.0.0.93
 numpy==2.5.3
-easyocr==1.7.2
+pytesseract
 gunicorn==26.2.0
