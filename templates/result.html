@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Prediction Result | AI Heart Disease Risk Predictor</title>
+
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+          rel="stylesheet">
+
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+
+    <!-- Bootstrap Icons -->
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <!-- Custom CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<nav class="custom-navbar">
+
+    <div class="navbar-container">
+
+        <a href="{{ url_for('index') }}" class="brand-logo">
+
+            <img src="{{ url_for('static', filename='heart-logo.png') }}"
+                 alt="AI Heart Disease Risk Predictor Logo"
+                 class="brand-logo-image">
+
+            <span class="brand-text">
+                AI Heart Disease
+                <span class="brand-highlight">Risk Predictor</span>
+            </span>
+
+        </a>
+
+
+        <div class="nav-status">
+
+            <span class="status-dot"></span>
+
+            Analysis Complete
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main class="result-main">
+
+    <div class="container">
+
+
+        <!-- =================================================
+             PAGE INTRO
+        ================================================== -->
+
+        <section class="result-header">
+
+            <div class="result-label">
+
+                <i class="bi bi-activity"></i>
+
+                PREDICTION RESULT
+
+            </div>
+
+
+            <h1>
+
+                Your Heart Health
+
+                <span>Risk Analysis</span>
+
+            </h1>
+
+
+            <p>
+
+                Your uploaded medical report has been processed
+                using OCR and analyzed using the trained
+                Machine Learning model.
+
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
+             MAIN RESULT CARD
+        ================================================== -->
+
+        <section class="main-result-card">
+
+
+            <div class="risk-section">
+
+
+                <!-- RESULT ICON -->
+
+                <div class="result-icon
+                    {% if prediction == 1 %}
+                        high-risk-icon
+                    {% else %}
+                        low-risk-icon
+                    {% endif %}">
+
+
+                    {% if prediction == 1 %}
+
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+
+                    {% else %}
+
+                        <i class="bi bi-heart-pulse-fill"></i>
+
+                    {% endif %}
+
+
+                </div>
+
+
+                <!-- RESULT TEXT -->
+
+                <div class="risk-content">
+
+                    <span class="result-small-title">
+
+                        AI PREDICTION
+
+                    </span>
+
+
+                    <h2>
+
+                        {% if prediction == 1 %}
+
+                            Higher Risk Detected
+
+                        {% else %}
+
+                            Lower Risk Detected
+
+                        {% endif %}
+
+                    </h2>
+
+
+                    <p>
+
+                        {% if prediction == 1 %}
+
+                            The machine learning model indicates
+                            a higher likelihood of heart disease
+                            based on the available clinical values.
+
+                        {% else %}
+
+                            The machine learning model indicates
+                            a lower likelihood of heart disease
+                            based on the available clinical values.
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RISK STATUS
+            ================================================== -->
+
+            <div class="risk-score">
+
+                <span>RISK STATUS</span>
+
+
+                <div class="risk-value
+                    {% if prediction == 1 %}
+                        risk-high
+                    {% else %}
+                        risk-low
+                    {% endif %}">
+
+
+                    {% if prediction == 1 %}
+
+                        HIGH
+
+                    {% else %}
+
+                        LOW
+
+                    {% endif %}
+
+
+                </div>
+
+
+                <small>
+
+                    Based on available clinical features
+
+                </small>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             CONFIDENCE + PROCESSING SUMMARY
+        ================================================== -->
+
+        <section class="row g-4 result-cards">
+
+
+            <!-- =================================================
+                 CONFIDENCE CARD
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div class="dashboard-card">
+
+
+                    <div class="card-heading">
+
+                        <div class="card-heading-icon">
+
+                            <i class="bi bi-bar-chart-fill"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>MODEL OUTPUT</span>
+
+                            <h3>Prediction Confidence</h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!--
+                        Probability is calculated in app.py
+                        and passed to this template.
+                    -->
+
+                    {% set confidence_value = probability|default(0)|float %}
+
+
+                    <div class="confidence-number">
+
+                        {{ "%.1f"|format(confidence_value) }}%
+
+                    </div>
+
+
+                    <div class="progress-container">
+
+                        <div class="progress-bar-custom"
+                             id="confidenceFill"
+                             style="width: {{ confidence_value }}%;">
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="confidence-note">
+
+                        Estimated probability produced by the
+                        machine learning model for the predicted
+                        heart disease risk.
+
+                    </p>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PROCESSING SUMMARY
+            ================================================== -->
+
+            <div class="col-lg-6">
+
+                <div class="dashboard-card">
+
+
+                    <div class="card-heading">
+
+                        <div class="card-heading-icon">
+
+                            <i class="bi bi-cpu-fill"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>AI ANALYSIS</span>
+
+                            <h3>Processing Summary</h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-list">
+
+
+                        <div>
+
+                            <span>Document Processing</span>
+
+                            <strong>Completed</strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>OCR Extraction</span>
+
+                            <strong>EasyOCR</strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>ML Algorithm</span>
+
+                            <strong>Random Forest</strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>Prediction</span>
+
+                            <strong>
+
+                                {% if prediction == 1 %}
+
+                                    Higher Risk
+
+                                {% else %}
+
+                                    Lower Risk
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             CLINICAL FEATURES
+        ================================================== -->
+
+        <section class="clinical-section">
+
+
+            <div class="section-title">
+
+                <span>EXTRACTED INFORMATION</span>
+
+                <h2>Clinical Features Used</h2>
+
+                <p>
+
+                    The following clinical values were available
+                    for the heart disease risk prediction.
+
+                </p>
+
+            </div>
+
+
+            <div class="clinical-grid">
+
+
+                <!-- AGE -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-person"></i>
+
+                        Age
+
+                    </span>
+
+
+                    <strong>
+
+                        {{ data.age if data.age is not none and data.age != '' else 'Not Found' }}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- SEX -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-gender-ambiguous"></i>
+
+                        Sex
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.sex == 1 or data.sex == '1' %}
+
+                            Male
+
+                        {% elif data.sex == 0 or data.sex == '0' %}
+
+                            Female
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- CHEST PAIN -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-heart"></i>
+
+                        Chest Pain Type
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.cp == 0 or data.cp == '0' %}
+
+                            Typical Angina
+
+                        {% elif data.cp == 1 or data.cp == '1' %}
+
+                            Atypical Angina
+
+                        {% elif data.cp == 2 or data.cp == '2' %}
+
+                            Non-anginal Pain
+
+                        {% elif data.cp == 3 or data.cp == '3' %}
+
+                            Asymptomatic
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- RESTING BP -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-heart-pulse"></i>
+
+                        Resting BP
+
+                    </span>
+
+
+                    <strong>
+
+                        {{ data.trestbps if data.trestbps is not none and data.trestbps != '' else 'Not Found' }}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- CHOLESTEROL -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-droplet"></i>
+
+                        Cholesterol
+
+                    </span>
+
+
+                    <strong>
+
+                        {{ data.chol if data.chol is not none and data.chol != '' else 'Not Found' }}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- FASTING BLOOD SUGAR -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-speedometer"></i>
+
+                        Fasting Blood Sugar
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.fbs == 1 or data.fbs == '1' %}
+
+                            High
+
+                        {% elif data.fbs == 0 or data.fbs == '0' %}
+
+                            Normal
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- RESTING ECG -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-activity"></i>
+
+                        Resting ECG
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.restecg == 0 or data.restecg == '0' %}
+
+                            Normal
+
+                        {% elif data.restecg == 1 or data.restecg == '1' %}
+
+                            ST-T Wave Abnormality
+
+                        {% elif data.restecg == 2 or data.restecg == '2' %}
+
+                            Left Ventricular Hypertrophy
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- MAX HEART RATE -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-heart-pulse-fill"></i>
+
+                        Max Heart Rate
+
+                    </span>
+
+
+                    <strong>
+
+                        {{ data.thalach if data.thalach is not none and data.thalach != '' else 'Not Found' }}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- EXERCISE ANGINA -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-person-walking"></i>
+
+                        Exercise Angina
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.exang == 1 or data.exang == '1' %}
+
+                            Yes
+
+                        {% elif data.exang == 0 or data.exang == '0' %}
+
+                            No
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- OLDPEAK -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-graph-up"></i>
+
+                        ST Depression
+
+                    </span>
+
+
+                    <strong>
+
+                        {{ data.oldpeak if data.oldpeak is not none and data.oldpeak != '' else 'Not Found' }}
+
+                    </strong>
+
+                </div>
+
+
+                <!-- ST SLOPE -->
+
+                <div class="clinical-item">
+
+                    <span>
+
+                        <i class="bi bi-bar-chart"></i>
+
+                        ST Slope
+
+                    </span>
+
+
+                    <strong>
+
+                        {% if data.slope == 0 or data.slope == '0' %}
+
+                            Upsloping
+
+                        {% elif data.slope == 1 or data.slope == '1' %}
+
+                            Flat
+
+                        {% elif data.slope == 2 or data.slope == '2' %}
+
+                            Downsloping
+
+                        {% else %}
+
+                            Not Found
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             INFORMATION NOTICE
+        ================================================== -->
+
+        <section class="notice-card">
+
+
+            <div class="notice-icon">
+
+                <i class="bi bi-info-circle-fill"></i>
+
+            </div>
+
+
+            <div>
+
+                <h4>Important Information</h4>
+
+
+                <p>
+
+                    This prediction is generated by a Machine
+                    Learning model using the clinical values
+                    extracted from the uploaded report. It is
+                    intended for educational and research purposes
+                    and should not be considered a medical diagnosis.
+
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             ACTION BUTTONS
+        ================================================== -->
+
+        <div class="result-actions">
+
+
+            <!-- DOWNLOAD PDF REPORT -->
+
+            <a href="{{ url_for('download_report') }}"
+               class="primary-action">
+
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+
+                Download Prediction Report
+
+            </a>
+
+
+            <!-- ANALYZE ANOTHER REPORT -->
+
+            <a href="{{ url_for('upload_page') }}"
+               class="secondary-action">
+
+                <i class="bi bi-arrow-repeat"></i>
+
+                Analyze Another Report
+
+            </a>
+
+
+            <!-- BACK TO HOME -->
+
+            <a href="{{ url_for('index') }}"
+               class="secondary-action">
+
+                <i class="bi bi-house"></i>
+
+                Back to Home
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+    <div class="container footer-inner">
+
+        <span>
+
+            © 2026 AI Heart Disease Risk Predictor
+
+        </span>
+
+
+        <span>
+
+            EasyOCR &nbsp;•&nbsp;
+            Random Forest &nbsp;•&nbsp;
+            Machine Learning
+
+        </span>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+Flask
+joblib
+pandas
+scikit-learn
+easyocr
+PyMuPDF
+reportlab
+Pillow
+opencv-python-headless
+numpy
+gunicorn

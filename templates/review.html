@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Review Medical Report | AI Heart Disease Risk Predictor
+    </title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav class="custom-navbar">
+
+    <div class="navbar-container">
+
+        <a href="{{ url_for('index') }}"
+           class="brand-logo">
+
+            <img src="{{ url_for('static', filename='heart-logo.png') }}"
+                 alt="AI Heart Disease Risk Predictor Logo"
+                 class="brand-logo-image">
+
+            <span class="brand-text">
+
+                AI Heart Disease
+
+                <span class="brand-highlight">
+                    Risk Predictor
+                </span>
+
+            </span>
+
+        </a>
+
+
+        <div class="review-nav-status">
+
+            <span class="status-dot"></span>
+
+            AI Analysis
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================================
+     PAGE HEADER
+========================================================= -->
+
+<section class="page-header">
+
+    <div class="container">
+
+        <div class="breadcrumb-area">
+
+            <a href="{{ url_for('index') }}">
+                Home
+            </a>
+
+            <i class="bi bi-chevron-right"></i>
+
+            <span>
+                Medical Report Review
+            </span>
+
+        </div>
+
+
+        <div class="header-content">
+
+            <div>
+
+                <div class="section-tag">
+
+                    <i class="bi bi-file-earmark-medical"></i>
+
+                    REPORT ANALYSIS
+
+                </div>
+
+
+                <h1>
+
+                    Review Your
+
+                    <span>
+                        Medical Information
+                    </span>
+
+                </h1>
+
+
+                <p>
+
+                    Review the information extracted from your
+                    medical report. Verify the values and complete
+                    any missing information before prediction.
+
+                </p>
+
+            </div>
+
+
+            <div class="analysis-badge">
+
+                <div class="analysis-icon">
+
+                    <i class="bi bi-activity"></i>
+
+                </div>
+
+                <div>
+
+                    <small>
+                        PROCESSING STATUS
+                    </small>
+
+                    <strong>
+                        OCR Completed
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<main class="review-main">
+
+    <div class="container">
+
+
+        <!-- =====================================================
+             OCR SUCCESS
+        ====================================================== -->
+
+        <div class="success-banner">
+
+            <div class="success-icon">
+
+                <i class="bi bi-check-lg"></i>
+
+            </div>
+
+            <div>
+
+                <strong>
+                    Medical report processed successfully
+                </strong>
+
+                <p>
+
+                    EasyOCR extracted the available patient and
+                    clinical information from your uploaded report.
+                    Please verify the values before continuing.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             PATIENT + REPORT INFORMATION
+        ====================================================== -->
+
+        <div class="row g-4 mb-4">
+
+
+            <!-- PATIENT INFORMATION -->
+
+            <div class="col-lg-6">
+
+                <div class="info-card">
+
+                    <div class="card-heading">
+
+                        <div class="heading-icon purple">
+
+                            <i class="bi bi-person-vcard"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                PATIENT
+                            </span>
+
+                            <h3>
+                                Patient Information
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-list">
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Patient Name
+                            </span>
+
+                            <strong>
+                                {{ data.get('patient_name', 'Not Found') }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Age
+                            </span>
+
+                            <strong>
+                                {{ data.get('age', 'Not Found') }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Gender
+                            </span>
+
+                            <strong>
+
+                                {% if data.get('sex') == 1 %}
+
+                                    Male
+
+                                {% elif data.get('sex') == 0 %}
+
+                                    Female
+
+                                {% else %}
+
+                                    Not Found
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- REPORT INFORMATION -->
+
+            <div class="col-lg-6">
+
+                <div class="info-card">
+
+                    <div class="card-heading">
+
+                        <div class="heading-icon blue">
+
+                            <i class="bi bi-file-earmark-text"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                DOCUMENT
+                            </span>
+
+                            <h3>
+                                Report Details
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-list">
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Hospital
+                            </span>
+
+                            <strong>
+                                {{ data.get('hospital_name', 'Not Found') }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Report Date
+                            </span>
+
+                            <strong>
+                                {{ data.get('report_date', 'Not Found') }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Processing
+                            </span>
+
+                            <strong class="processed">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                                OCR Processed
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             MEDICAL PARAMETERS
+        ====================================================== -->
+
+        <form action="{{ url_for('predict') }}"
+              method="POST">
+
+
+            <!-- Hidden Patient Information -->
+
+            <input type="hidden"
+                   name="patient_name"
+                   value="{{ data.get('patient_name', 'Not Found') }}">
+
+            <input type="hidden"
+                   name="hospital_name"
+                   value="{{ data.get('hospital_name', 'Not Found') }}">
+
+            <input type="hidden"
+                   name="report_date"
+                   value="{{ data.get('report_date', 'Not Found') }}">
+
+
+            <div class="parameters-card">
+
+
+                <!-- HEADER -->
+
+                <div class="parameters-header">
+
+                    <div>
+
+                        <div class="section-tag">
+
+                            <i class="bi bi-activity"></i>
+
+                            CLINICAL DATA
+
+                        </div>
+
+                        <h2>
+                            Extracted Medical Parameters
+                        </h2>
+
+                        <p>
+
+                            Verify the extracted values before sending
+                            the clinical features to the prediction model.
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="data-status">
+
+                        <span class="data-status-dot"></span>
+
+                        Data Review
+
+                    </div>
+
+                </div>
+
+
+                <!-- PROGRESS -->
+
+                <div class="extraction-progress">
+
+                    <div class="progress-top">
+
+                        <span>
+                            Model input features
+                        </span>
+
+                        <strong>
+                            11 Features
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-track">
+
+                        <div class="progress-value"
+                             style="width: 100%;">
+                        </div>
+
+                    </div>
+
+                    <small>
+
+                        The Random Forest model uses
+                        11 clinical features for prediction.
+
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     CLINICAL TABLE
+                ================================================== -->
+
+                <div class="table-responsive">
+
+                    <table class="clinical-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Clinical Parameter
+                                </th>
+
+                                <th>
+                                    Extracted Value
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Manual Input
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            <!-- =================================================
+                                 AGE
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-person"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Age
+                                            </strong>
+
+                                            <small>
+                                                Patient age
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ data.get('age', 'Not Found') }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('age') is not none
+                                          and data.get('age') != '' %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="age"
+                                               value="{{ data.get('age') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('age') is none
+                                          or data.get('age') == '' %}
+
+                                        <input type="number"
+                                               class="clinical-input"
+                                               name="age"
+                                               placeholder="Enter age"
+                                               required>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 SEX
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-gender-ambiguous"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Sex
+                                            </strong>
+
+                                            <small>
+                                                Patient gender
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('sex') == 1 %}
+
+                                        Male
+
+                                    {% elif data.get('sex') == 0 %}
+
+                                        Female
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('sex') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="sex"
+                                               value="{{ data.get('sex') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('sex') is none %}
+
+                                        <select class="clinical-input"
+                                                name="sex"
+                                                required>
+
+                                            <option value="">
+                                                Select gender
+                                            </option>
+
+                                            <option value="1">
+                                                Male
+                                            </option>
+
+                                            <option value="0">
+                                                Female
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 CHEST PAIN
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-heart-pulse"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Chest Pain Type
+                                            </strong>
+
+                                            <small>
+                                                Clinical chest pain category
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('cp') == 0 %}
+
+                                        Typical Angina
+
+                                    {% elif data.get('cp') == 1 %}
+
+                                        Atypical Angina
+
+                                    {% elif data.get('cp') == 2 %}
+
+                                        Non-anginal Pain
+
+                                    {% elif data.get('cp') == 3 %}
+
+                                        Asymptomatic
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('cp') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="cp"
+                                               value="{{ data.get('cp') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('cp') is none %}
+
+                                        <select class="clinical-input"
+                                                name="cp"
+                                                required>
+
+                                            <option value="">
+                                                Select type
+                                            </option>
+
+                                            <option value="0">
+                                                Typical Angina
+                                            </option>
+
+                                            <option value="1">
+                                                Atypical Angina
+                                            </option>
+
+                                            <option value="2">
+                                                Non-anginal Pain
+                                            </option>
+
+                                            <option value="3">
+                                                Asymptomatic
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 RESTING BLOOD PRESSURE
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-heart"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Resting Blood Pressure
+                                            </strong>
+
+                                            <small>
+                                                Resting blood pressure
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ data.get('trestbps', 'Not Found') }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('trestbps') is not none
+                                          and data.get('trestbps') != '' %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="trestbps"
+                                               value="{{ data.get('trestbps') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('trestbps') is none
+                                          or data.get('trestbps') == '' %}
+
+                                        <input type="number"
+                                               class="clinical-input"
+                                               name="trestbps"
+                                               placeholder="Enter BP"
+                                               required>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 CHOLESTEROL
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-droplet"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Cholesterol
+                                            </strong>
+
+                                            <small>
+                                                Total cholesterol
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ data.get('chol', 'Not Found') }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('chol') is not none
+                                          and data.get('chol') != '' %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="chol"
+                                               value="{{ data.get('chol') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('chol') is none
+                                          or data.get('chol') == '' %}
+
+                                        <input type="number"
+                                               class="clinical-input"
+                                               name="chol"
+                                               placeholder="Enter cholesterol"
+                                               required>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 FASTING BLOOD SUGAR
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-droplet-half"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Fasting Blood Sugar
+                                            </strong>
+
+                                            <small>
+                                                Fasting blood sugar status
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('fbs') == 0 %}
+
+                                        Normal
+
+                                    {% elif data.get('fbs') == 1 %}
+
+                                        High
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('fbs') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="fbs"
+                                               value="{{ data.get('fbs') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('fbs') is none %}
+
+                                        <select class="clinical-input"
+                                                name="fbs"
+                                                required>
+
+                                            <option value="">
+                                                Select status
+                                            </option>
+
+                                            <option value="0">
+                                                Normal
+                                            </option>
+
+                                            <option value="1">
+                                                High
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 REST ECG
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-activity"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Resting ECG
+                                            </strong>
+
+                                            <small>
+                                                Resting ECG result
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('restecg') == 0 %}
+
+                                        Normal
+
+                                    {% elif data.get('restecg') == 1 %}
+
+                                        ST-T Wave Abnormality
+
+                                    {% elif data.get('restecg') == 2 %}
+
+                                        Left Ventricular Hypertrophy
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('restecg') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="restecg"
+                                               value="{{ data.get('restecg') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('restecg') is none %}
+
+                                        <select class="clinical-input"
+                                                name="restecg"
+                                                required>
+
+                                            <option value="">
+                                                Select result
+                                            </option>
+
+                                            <option value="0">
+                                                Normal
+                                            </option>
+
+                                            <option value="1">
+                                                ST-T Wave Abnormality
+                                            </option>
+
+                                            <option value="2">
+                                                Left Ventricular Hypertrophy
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 MAXIMUM HEART RATE
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-heart-pulse"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Maximum Heart Rate
+                                            </strong>
+
+                                            <small>
+                                                Maximum heart rate achieved
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ data.get('thalach', 'Not Found') }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('thalach') is not none
+                                          and data.get('thalach') != '' %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="thalach"
+                                               value="{{ data.get('thalach') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('thalach') is none
+                                          or data.get('thalach') == '' %}
+
+                                        <input type="number"
+                                               class="clinical-input"
+                                               name="thalach"
+                                               placeholder="Enter heart rate"
+                                               required>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 EXERCISE ANGINA
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-lightning"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                Exercise-Induced Angina
+                                            </strong>
+
+                                            <small>
+                                                Exercise-induced chest pain
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('exang') == 0 %}
+
+                                        No
+
+                                    {% elif data.get('exang') == 1 %}
+
+                                        Yes
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('exang') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="exang"
+                                               value="{{ data.get('exang') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('exang') is none %}
+
+                                        <select class="clinical-input"
+                                                name="exang"
+                                                required>
+
+                                            <option value="">
+                                                Select
+                                            </option>
+
+                                            <option value="0">
+                                                No
+                                            </option>
+
+                                            <option value="1">
+                                                Yes
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 OLDPEAK
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-graph-down"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                ST Depression
+                                            </strong>
+
+                                            <small>
+                                                ST depression induced by exercise
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    {{ data.get('oldpeak', 'Not Found') }}
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('oldpeak') is not none
+                                          and data.get('oldpeak') != '' %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="oldpeak"
+                                               value="{{ data.get('oldpeak') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('oldpeak') is none
+                                          or data.get('oldpeak') == '' %}
+
+                                        <input type="number"
+                                               step="0.1"
+                                               class="clinical-input"
+                                               name="oldpeak"
+                                               placeholder="Enter value"
+                                               required>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 SLOPE
+                            ================================================== -->
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="parameter-name">
+
+                                        <span class="parameter-icon">
+                                            <i class="bi bi-graph-up-arrow"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <strong>
+                                                ST Slope
+                                            </strong>
+
+                                            <small>
+                                                ST segment slope
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('slope') == 0 %}
+
+                                        Upsloping
+
+                                    {% elif data.get('slope') == 1 %}
+
+                                        Flat
+
+                                    {% elif data.get('slope') == 2 %}
+
+                                        Downsloping
+
+                                    {% else %}
+
+                                        Not Found
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('slope') is not none %}
+
+                                        <span class="extracted-badge">
+
+                                            <i class="bi bi-check"></i>
+
+                                            Extracted
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               name="slope"
+                                               value="{{ data.get('slope') }}">
+
+                                    {% else %}
+
+                                        <span class="missing-badge">
+                                            Missing
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if data.get('slope') is none %}
+
+                                        <select class="clinical-input"
+                                                name="slope"
+                                                required>
+
+                                            <option value="">
+                                                Select slope
+                                            </option>
+
+                                            <option value="0">
+                                                Upsloping
+                                            </option>
+
+                                            <option value="1">
+                                                Flat
+                                            </option>
+
+                                            <option value="2">
+                                                Downsloping
+                                            </option>
+
+                                        </select>
+
+                                    {% else %}
+
+                                        <span class="not-required">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 AI SUMMARY
+            ====================================================== -->
+
+            <div class="summary-card">
+
+                <div class="summary-left">
+
+                    <div class="summary-icon">
+
+                        <i class="bi bi-cpu"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            AI PREPARATION
+                        </span>
+
+                        <h3>
+                            Ready for Prediction
+                        </h3>
+
+                        <p>
+
+                            The reviewed clinical information will be
+                            processed by the trained Random Forest model.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary-items">
+
+                    <div>
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        OCR data extracted
+
+                    </div>
+
+
+                    <div>
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        Clinical values reviewed
+
+                    </div>
+
+
+                    <div>
+
+                        <i class="bi bi-shield-check"></i>
+
+                        ML prediction ready
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 ACTION AREA
+            ====================================================== -->
+
+            <div class="action-area">
+
+                <a href="{{ url_for('index') }}"
+                   class="secondary-button">
+
+                    <i class="bi bi-arrow-left"></i>
+
+                    Upload Another Report
+
+                </a>
+
+
+                <button type="submit"
+                        class="primary-button">
+
+                    Analyze Heart Disease Risk
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</main>
+
+
+<!-- =========================================================
+     DISCLAIMER
+========================================================= -->
+
+<section class="disclaimer-section">
+
+    <div class="container">
+
+        <div class="disclaimer-card">
+
+            <i class="bi bi-info-circle"></i>
+
+            <div>
+
+                <strong>
+                    Important Information
+                </strong>
+
+                <p>
+
+                    This system is developed for educational and
+                    research purposes. The prediction is generated
+                    by a machine learning model and should not be
+                    considered a medical diagnosis.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="review-footer">
+
+    <div class="container">
+
+        <div class="footer-main">
+
+            <div class="footer-brand">
+
+                <span class="footer-ecg">
+
+                    <svg viewBox="0 0 100 40"
+                         xmlns="http://www.w3.org/2000/svg">
+
+                        <polyline
+                            points="0,20 15,20 22,8 30,32 38,20 55,20 62,12 70,28 78,20 100,20"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2">
+                        </polyline>
+
+                    </svg>
+
+                </span>
+
+                <span>
+                    AI Heart Disease Risk Predictor
+                </span>
+
+            </div>
+
+
+            <div class="footer-text">
+
+                AI-Based Heart Disease Risk Prediction System
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+</body>
+
+</html>
