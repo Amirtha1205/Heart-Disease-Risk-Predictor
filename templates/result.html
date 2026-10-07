@@ -137,14 +137,14 @@
                 <!-- RESULT ICON -->
 
                 <div class="result-icon
-                    {% if prediction == 1 %}
+                    {% if prediction == 'High Risk of Heart Disease' %}
                         high-risk-icon
                     {% else %}
                         low-risk-icon
                     {% endif %}">
 
 
-                    {% if prediction == 1 %}
+                    {% if prediction == 'High Risk of Heart Disease' %}
 
                         <i class="bi bi-exclamation-triangle-fill"></i>
 
@@ -171,7 +171,7 @@
 
                     <h2>
 
-                        {% if prediction == 1 %}
+                        {% if prediction == 'High Risk of Heart Disease' %}
 
                             Higher Risk Detected
 
@@ -186,7 +186,7 @@
 
                     <p>
 
-                        {% if prediction == 1 %}
+                        {% if prediction == 'High Risk of Heart Disease' %}
 
                             The machine learning model indicates
                             a higher likelihood of heart disease
@@ -217,14 +217,14 @@
 
 
                 <div class="risk-value
-                    {% if prediction == 1 %}
+                    {% if prediction == 'High Risk of Heart Disease' %}
                         risk-high
                     {% else %}
                         risk-low
                     {% endif %}">
 
 
-                    {% if prediction == 1 %}
+                    {% if prediction == 'High Risk of Heart Disease' %}
 
                         HIGH
 
@@ -391,7 +391,7 @@
 
                             <strong>
 
-                                {% if prediction == 1 %}
+                                {% if prediction == 'High Risk of Heart Disease' %}
 
                                     Higher Risk
 
@@ -821,7 +821,7 @@
 
             <!-- DOWNLOAD PDF REPORT -->
 
-            <a href="{{ url_for('download_report') }}"
+            <a href="{{ url_for('download') }}"
                class="primary-action">
 
                 <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -880,7 +880,7 @@
 
         <span>
 
-            EasyOCR &nbsp;•&nbsp;
+            Tesseract OCR &nbsp;•&nbsp;
             Random Forest &nbsp;•&nbsp;
             Machine Learning
 
