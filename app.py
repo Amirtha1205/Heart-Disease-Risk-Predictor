@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file
+
 import os
 import joblib
 import pandas as pd
@@ -116,13 +117,11 @@ def upload():
     if not reports:
 
         return """
-
         <h3>No report uploaded.</h3>
 
         <a href="/upload-page">
             Go Back
         </a>
-
         """
 
 
@@ -144,11 +143,8 @@ def upload():
         # ----------------------------------------------------
 
         filepath = os.path.join(
-
             UPLOAD_FOLDER,
-
             report.filename
-
         )
 
         report.save(filepath)
@@ -174,7 +170,6 @@ def upload():
 
         for key, value in data.items():
 
-            # Keep extracted values
             if value is not None:
 
                 merged_data[key] = value
@@ -200,15 +195,10 @@ def upload():
     # ========================================================
 
     return render_template(
-
         "review.html",
-
         data=merged_data,
-
         missing_features=[],
-
         error=None
-
     )
 
 
@@ -219,16 +209,12 @@ def upload():
 def get_int_value(field_name):
 
     value = request.form.get(
-
         field_name,
-
         ""
-
     ).strip()
 
 
     if value == "":
-
         return np.nan
 
 
@@ -248,16 +234,12 @@ def get_int_value(field_name):
 def get_float_value(field_name):
 
     value = request.form.get(
-
         field_name,
-
         ""
-
     ).strip()
 
 
     if value == "":
-
         return np.nan
 
 
@@ -356,11 +338,9 @@ def find_missing_features(input_data):
         # ----------------------------------------------------
 
         if feature in [
-
             "trestbps",
             "chol",
             "thalach"
-
         ]:
 
             try:
@@ -420,12 +400,10 @@ def feature_display_name(feature):
 
     }
 
+
     return names.get(
-
         feature,
-
         feature
-
     )
 
 
@@ -440,15 +418,19 @@ def predict():
 
 
     # ========================================================
+    # Reset Previous PDF
+    # ========================================================
+
+    pdf_file_path = None
+
+
+    # ========================================================
     # Read Patient Information
     # ========================================================
 
     patient_name = request.form.get(
-
         "patient_name",
-
         "Not Found"
-
     ).strip()
 
 
@@ -457,11 +439,8 @@ def predict():
 
 
     hospital_name = request.form.get(
-
         "hospital_name",
-
         "Not Found"
-
     ).strip()
 
 
@@ -470,11 +449,8 @@ def predict():
 
 
     report_date = request.form.get(
-
         "report_date",
-
         "Not Found"
-
     ).strip()
 
 
@@ -565,9 +541,7 @@ def predict():
     # ========================================================
 
     missing_features = find_missing_features(
-
         input_data
-
     )
 
 
@@ -590,10 +564,12 @@ def predict():
         print("PREDICTION STOPPED")
         print("========================================")
 
+
         print(
             "Missing ML Features:",
             ", ".join(missing_names)
         )
+
 
         print("========================================\n")
 
@@ -681,7 +657,10 @@ def predict():
 
     if input_data.isnull().any().any():
 
-        print("\nPrediction stopped because NaN values remain.")
+        print(
+            "\nPrediction stopped because NaN values remain."
+        )
+
 
         return render_template(
 
@@ -717,9 +696,7 @@ def predict():
     try:
 
         prediction_value = model.predict(
-
             input_data
-
         )[0]
 
     except Exception as e:
@@ -729,7 +706,6 @@ def predict():
 
 
         return """
-
         <h3>Prediction Error</h3>
 
         <p>
@@ -740,7 +716,6 @@ def predict():
         <a href="/upload-page">
             Upload Again
         </a>
-
         """
 
 
@@ -751,9 +726,7 @@ def predict():
     if hasattr(model, "predict_proba"):
 
         probability_values = model.predict_proba(
-
             input_data
-
         )[0]
 
 
@@ -762,11 +735,8 @@ def predict():
         # ----------------------------------------------------
 
         confidence = round(
-
             max(probability_values) * 100,
-
             2
-
         )
 
 
@@ -778,11 +748,8 @@ def predict():
         if len(probability_values) > 1:
 
             risk_probability = round(
-
                 probability_values[1] * 100,
-
                 2
-
             )
 
         else:
@@ -790,13 +757,10 @@ def predict():
             risk_probability = (
 
                 100.0
-
                 if prediction_value == 1
-
                 else 0.0
 
             )
-
 
     else:
 
@@ -805,9 +769,7 @@ def predict():
         risk_probability = (
 
             100.0
-
             if prediction_value == 1
-
             else 0.0
 
         )
@@ -831,29 +793,20 @@ def predict():
     # ========================================================
 
     best_algorithm = model_info.get(
-
         "best_algorithm",
-
         "Random Forest"
-
     )
 
 
     best_accuracy = model_info.get(
-
         "best_accuracy_percent",
-
         0.0
-
     )
 
 
     algorithm_comparison = model_info.get(
-
         "algorithm_comparison",
-
         []
-
     )
 
 
@@ -889,47 +842,30 @@ def predict():
     print("\n========================================")
 
     print(
-
         "Prediction:",
-
         prediction
-
     )
 
     print(
-
         "Confidence:",
-
         confidence,
-
         "%"
-
     )
 
     print(
-
         "Heart Disease Probability:",
-
         risk_probability,
-
         "%"
-
     )
 
     print(
-
         "Best Algorithm:",
-
         best_algorithm
-
     )
 
     print(
-
         "Best Accuracy:",
-
         best_accuracy_display
-
     )
 
     print("========================================\n")
@@ -1007,7 +943,6 @@ def predict():
         "Gender":
 
             (
-
                 "Male"
 
                 if sex == 1
@@ -1033,7 +968,6 @@ def predict():
         "Blood Sugar":
 
             (
-
                 "High"
 
                 if fbs == 1
@@ -1062,7 +996,6 @@ def predict():
         "Exercise Angina":
 
             (
-
                 "Yes"
 
                 if exang == 1
@@ -1092,60 +1025,52 @@ def predict():
     # Generate PDF
     # ========================================================
 
-    pdf_file_path = os.path.join(
-
-        REPORT_FOLDER,
-
-        "Heart_Disease_Report.pdf"
-
-    )
-
-
     try:
 
-        # ----------------------------------------------------
-        # IMPORTANT:
-        #
-        # probability is passed ONLY ONCE.
-        #
-        # Previous code passed "confidence" as the
-        # 4th positional argument and also passed
-        # probability=risk_probability.
-        #
-        # That caused:
-        #
-        # create_report() got multiple values
-        # for argument 'probability'
-        # ----------------------------------------------------
-
-        create_report(
-
-            pdf_file_path,
+        generated_pdf = create_report(
 
             patient_data,
 
-            prediction,
+            prediction_value,
 
-            probability=risk_probability,
-
-            best_algorithm=best_algorithm,
-
-            best_accuracy=best_accuracy_display,
-
-            algorithm_comparison=algorithm_comparison
+            risk_probability
 
         )
 
 
-        print("\nPDF generated successfully.")
+        pdf_file_path = generated_pdf
+
+
+        print("\n========================================")
+        print("PDF generated successfully.")
+        print("PDF Path:", pdf_file_path)
+        print("========================================")
 
 
     except Exception as e:
 
-        print("\nPDF Generation Error:")
+        print("\n========================================")
+        print("PDF Generation Error:")
         print(e)
+        print("========================================")
+
 
         pdf_file_path = None
+
+
+    # ========================================================
+    # Check PDF Availability
+    # ========================================================
+
+    pdf_available = (
+
+        pdf_file_path is not None
+
+        and
+
+        os.path.isfile(pdf_file_path)
+
+    )
 
 
     # ========================================================
@@ -1168,7 +1093,9 @@ def predict():
 
         best_accuracy=best_accuracy_display,
 
-        algorithm_comparison=algorithm_comparison
+        algorithm_comparison=algorithm_comparison,
+
+        pdf_available=pdf_available
 
     )
 
@@ -1180,37 +1107,32 @@ def predict():
 @app.route("/download")
 def download():
 
+    global pdf_file_path
+
+
     if pdf_file_path is None:
 
         return """
-
-        <h3>
-            No report available.
-        </h3>
+        <h3>No report available.</h3>
 
         <p>
-            Please perform a prediction first.
+        Please complete the prediction first.
         </p>
 
         <a href="/upload-page">
             Start Analysis
         </a>
-
         """
 
 
-    if not os.path.exists(pdf_file_path):
+    if not os.path.isfile(pdf_file_path):
 
         return """
-
-        <h3>
-            Report file not found.
-        </h3>
+        <h3>Report file not found.</h3>
 
         <a href="/upload-page">
             Start New Analysis
         </a>
-
         """
 
 
@@ -1218,7 +1140,11 @@ def download():
 
         pdf_file_path,
 
-        as_attachment=True
+        as_attachment=True,
+
+        download_name="Heart_Disease_Prediction_Report.pdf",
+
+        mimetype="application/pdf"
 
     )
 
@@ -1230,7 +1156,5 @@ def download():
 if __name__ == "__main__":
 
     app.run(
-
         debug=True
-
     )
