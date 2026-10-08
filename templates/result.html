@@ -137,14 +137,14 @@
                 <!-- RESULT ICON -->
 
                 <div class="result-icon
-                    {% if prediction == 'High Risk of Heart Disease' %}
+                    {% if prediction == 1 or prediction == '1' %}
                         high-risk-icon
                     {% else %}
                         low-risk-icon
                     {% endif %}">
 
 
-                    {% if prediction == 'High Risk of Heart Disease' %}
+                    {% if prediction == 1 or prediction == '1' %}
 
                         <i class="bi bi-exclamation-triangle-fill"></i>
 
@@ -171,7 +171,7 @@
 
                     <h2>
 
-                        {% if prediction == 'High Risk of Heart Disease' %}
+                        {% if prediction == 1 or prediction == '1' %}
 
                             Higher Risk Detected
 
@@ -186,7 +186,7 @@
 
                     <p>
 
-                        {% if prediction == 'High Risk of Heart Disease' %}
+                        {% if prediction == 1 or prediction == '1' %}
 
                             The machine learning model indicates
                             a higher likelihood of heart disease
@@ -217,14 +217,14 @@
 
 
                 <div class="risk-value
-                    {% if prediction == 'High Risk of Heart Disease' %}
+                    {% if prediction == 1 or prediction == '1' %}
                         risk-high
                     {% else %}
                         risk-low
                     {% endif %}">
 
 
-                    {% if prediction == 'High Risk of Heart Disease' %}
+                    {% if prediction == 1 or prediction == '1' %}
 
                         HIGH
 
@@ -259,7 +259,7 @@
 
             <!-- =================================================
                  CONFIDENCE CARD
-            ================================================== -->
+        ================================================== -->
 
             <div class="col-lg-6">
 
@@ -391,7 +391,7 @@
 
                             <strong>
 
-                                {% if prediction == 'High Risk of Heart Disease' %}
+                                {% if prediction == 1 or prediction == '1' %}
 
                                     Higher Risk
 

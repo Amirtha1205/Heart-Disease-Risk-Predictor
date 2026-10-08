@@ -82,8 +82,8 @@ def extract_values(text):
 
         value = value.strip()
 
-        value = re.sub(r"^[\s:;\-]+", "", value)
-        value = re.sub(r"[\s:;\-]+$", "", value)
+        value = re.sub(r"^[\s:;\-,|]+", "", value)
+        value = re.sub(r"[\s:;\-,|]+$", "", value)
 
         value = re.sub(r"\s+", " ", value)
 
@@ -97,9 +97,9 @@ def extract_values(text):
         Age
         45 Years
 
-        Age 45 Years
-
         Age: 45 Years
+
+        Age 45 Years
         """
 
         for i, line in enumerate(lines):
@@ -185,18 +185,20 @@ def extract_values(text):
     # ----------------------------------------------------------
 
     hospital_name = get_next_value([
-        r"Hospital Name",
-        r"Diagnostic Center Name",
-        r"Diagnostic Centre Name",
-        r"Medical Center Name",
-        r"Medical Centre Name",
-        r"Clinic Name",
-        r"Scan Center Name",
-        r"Scan Centre Name"
+
+        r"Hospital\s*Name",
+        r"Diagnostic\s*Center\s*Name",
+        r"Diagnostic\s*Centre\s*Name",
+        r"Medical\s*Center\s*Name",
+        r"Medical\s*Centre\s*Name",
+        r"Clinic\s*Name",
+        r"Scan\s*Center\s*Name",
+        r"Scan\s*Centre\s*Name"
+
     ])
 
     # ----------------------------------------------------------
-    # 2. Search organization name
+    # 2. Search organization name from OCR lines
     # ----------------------------------------------------------
 
     if not hospital_name:
@@ -206,7 +208,11 @@ def extract_values(text):
             clean_line = clean(line)
             lower = clean_line.lower()
 
-            # Ignore report title
+            if not clean_line:
+                continue
+
+            # Ignore report titles
+
             if "sample cardiology" in lower:
                 continue
 
@@ -216,14 +222,26 @@ def extract_values(text):
             if "cardiology & lab" in lower:
                 continue
 
-            # Ignore disclaimer
+            if lower in [
+                "laboratory",
+                "report",
+                "cardiology"
+            ]:
+                continue
+
+            # Ignore disclaimers
+
             if "synthetic sample" in lower:
                 continue
 
             if "not a real medical record" in lower:
                 continue
 
+            if "educational" in lower and "sample" in lower:
+                continue
+
             # Ignore headings
+
             if lower in [
                 "patient information",
                 "patient details",
@@ -240,7 +258,8 @@ def extract_values(text):
             ]:
                 continue
 
-            # Ignore common ECG headings
+            # Ignore ECG headings
+
             if lower in [
                 "ecg",
                 "electrocardiogram",
@@ -249,12 +268,8 @@ def extract_values(text):
             ]:
                 continue
 
-            # Ignore clinical sections
-            if lower.startswith("clinical"):
-                continue
-
             # --------------------------------------------------
-            # Organization keywords
+            # Diagnostics
             # --------------------------------------------------
 
             if re.search(
@@ -266,6 +281,10 @@ def extract_values(text):
                 hospital_name = clean_line
                 break
 
+            # --------------------------------------------------
+            # Hospital
+            # --------------------------------------------------
+
             if re.search(
                 r"\bhospital\b",
                 lower,
@@ -275,8 +294,12 @@ def extract_values(text):
                 hospital_name = clean_line
                 break
 
+            # --------------------------------------------------
+            # Medical Center
+            # --------------------------------------------------
+
             if re.search(
-                r"\bmedical\s+center\b",
+                r"\bmedical\s+cent(?:er|re)\b",
                 lower,
                 re.IGNORECASE
             ):
@@ -284,14 +307,9 @@ def extract_values(text):
                 hospital_name = clean_line
                 break
 
-            if re.search(
-                r"\bmedical\s+centre\b",
-                lower,
-                re.IGNORECASE
-            ):
-
-                hospital_name = clean_line
-                break
+            # --------------------------------------------------
+            # Clinic
+            # --------------------------------------------------
 
             if re.search(
                 r"\bclinic\b",
@@ -303,9 +321,7 @@ def extract_values(text):
                 break
 
             # --------------------------------------------------
-            # NEW: SCAN / SCANS
-            # Example:
-            # Gengaa Scans
+            # Scan / Scans
             # --------------------------------------------------
 
             if re.search(
@@ -318,14 +334,82 @@ def extract_values(text):
                 break
 
     # ----------------------------------------------------------
-    # 3. Specific fallback for current sample report
+    # 3. OCR correction for Gengaa Scans
+    #
+    # Possible Tesseract results:
+    #
+    # Gengaa Scans
+    # GENGAA SCANS
+    # Gengaa Scan
+    # NGAA SCANS
+    # bd NGAA SCANS
+    # GENGAA SCAN
+    # ----------------------------------------------------------
+
+    if hospital_name:
+
+        hospital_clean = clean(hospital_name)
+
+        hospital_lower = hospital_clean.lower()
+
+        # Remove common OCR garbage before the organization name
+
+        hospital_lower = re.sub(
+            r"^[^a-zA-Z]*",
+            "",
+            hospital_lower
+        )
+
+        # Known OCR variations
+
+        if (
+            "gengaa scans" in hospital_lower
+            or "gengaa scan" in hospital_lower
+            or "ngaa scans" in hospital_lower
+            or "ngaa scan" in hospital_lower
+        ):
+
+            hospital_name = "Gengaa Scans"
+
+        elif re.search(
+            r"g\s*e\s*n\s*g\s*a\s*a\s*\s*scans?",
+            hospital_lower,
+            re.IGNORECASE
+        ):
+
+            hospital_name = "Gengaa Scans"
+
+        else:
+
+            hospital_name = hospital_clean
+
+    # ----------------------------------------------------------
+    # 4. Search full text for Gengaa Scans
+    # ----------------------------------------------------------
+
+    if not hospital_name:
+
+        if re.search(
+            r"(?:gengaa|ngaa)\s+scans?",
+            normalized_text,
+            re.IGNORECASE
+        ):
+
+            hospital_name = "Gengaa Scans"
+
+    # ----------------------------------------------------------
+    # 5. Heart Care Diagnostics fallback
     # ----------------------------------------------------------
 
     if not hospital_name:
 
         for line in lines:
 
-            if line.strip().upper() == "HEART CARE DIAGNOSTICS":
+            if re.search(
+                r"HEART\s*CARE\s*DIAGNOSTICS",
+                line,
+                re.IGNORECASE
+            ):
 
                 hospital_name = "HEART CARE DIAGNOSTICS"
 
@@ -337,7 +421,7 @@ def extract_values(text):
 
     if hospital_name:
 
-        data["hospital_name"] = hospital_name
+        data["hospital_name"] = clean(hospital_name)
 
     # ==========================================================
     # PATIENT NAME
@@ -353,10 +437,14 @@ def extract_values(text):
     # Patient Name: Mrs.Susmitha sri
     #
     # Patient Name Mrs.Susmitha sri
+    #
+    # Patient: RAMESH KUMAR
+    #
+    # Patient : RAMESH KUMAR
     # ----------------------------------------------------------
 
     match = re.search(
-        r"\bPatient\s*Name\s*[:\-]?\s*(.+?)"
+        r"\bPatient\s*(?:Name)?\s*[:\-]?\s*(.+?)"
         r"(?=\s+Report\s*ID\b"
         r"|\s+Patient\s*ID\b"
         r"|\s+Age\b"
@@ -379,14 +467,49 @@ def extract_values(text):
     # MULTI-LINE FORMAT
     #
     # Patient Name
-    # Arun Kumar
+    # RAMESH KUMAR
+    #
+    # Patient
+    # RAMESH KUMAR
     # ----------------------------------------------------------
 
     if not patient_name:
 
         patient_name = get_next_value([
-            r"Patient\s*Name"
+            r"Patient\s*Name",
+            r"Patient"
         ])
+
+    # ----------------------------------------------------------
+    # OCR sometimes produces:
+    #
+    # Patient Name:
+    # Mrs.Susmitha sri
+    #
+    # Patient:
+    # RAMESH KUMAR
+    # ----------------------------------------------------------
+
+    if not patient_name:
+
+        for i, line in enumerate(lines):
+
+            if re.search(
+                r"^\s*Patient(?:\s+Name)?\s*[:\-]?\s*$",
+                line,
+                re.IGNORECASE
+            ):
+
+                # Try next line
+
+                if i + 1 < len(lines):
+
+                    next_line = clean(lines[i + 1])
+
+                    if next_line:
+
+                        patient_name = next_line
+                        break
 
     # ----------------------------------------------------------
     # CLEAN PATIENT NAME
@@ -395,6 +518,7 @@ def extract_values(text):
     if patient_name:
 
         # Remove accidental labels
+
         patient_name = re.sub(
             r"\bReport\s*ID\b.*$",
             "",
@@ -423,7 +547,50 @@ def extract_values(text):
             flags=re.IGNORECASE
         )
 
+        patient_name = re.sub(
+            r"\bSex\b.*$",
+            "",
+            patient_name,
+            flags=re.IGNORECASE
+        )
+
+        patient_name = re.sub(
+            r"\bAcquired\s*At\b.*$",
+            "",
+            patient_name,
+            flags=re.IGNORECASE
+        )
+
+        patient_name = re.sub(
+            r"\bReported\s*At\b.*$",
+            "",
+            patient_name,
+            flags=re.IGNORECASE
+        )
+
         patient_name = clean(patient_name)
+
+        # Remove OCR separators
+
+        patient_name = re.sub(
+            r"^[\s:;\-,.|]+",
+            "",
+            patient_name
+        )
+
+        # Keep normal name characters
+
+        patient_name = re.sub(
+            r"[^A-Za-z .'\-]",
+            " ",
+            patient_name
+        )
+
+        patient_name = re.sub(
+            r"\s+",
+            " ",
+            patient_name
+        ).strip()
 
     # ----------------------------------------------------------
     # INVALID PATIENT NAME
@@ -432,6 +599,7 @@ def extract_values(text):
     if patient_name:
 
         invalid_patient_names = [
+
             "patient",
             "patient name",
             "name",
@@ -441,6 +609,7 @@ def extract_values(text):
             "not found",
             "n/a",
             "na"
+
         ]
 
         if patient_name.lower() in invalid_patient_names:
@@ -494,31 +663,27 @@ def extract_values(text):
     ])
 
     # ----------------------------------------------------------
-    # NEW ECG FORMAT
+    # ECG FORMAT
     #
     # Age / Gender: 20/Female
-    #
     # Age/Gender: 20/Male
-    #
     # Age Gender: 20/Female
     # ----------------------------------------------------------
 
-    if not age_value:
+    age_gender_match = re.search(
+        r"\bAge\s*[/|]?\s*Gender"
+        r"\s*[:\-]?\s*"
+        r"(\d{1,3})"
+        r"\s*(?:Years?|Yrs?)?"
+        r"\s*[/|]\s*"
+        r"(?:Male|Female|M|F)\b",
+        normalized_text,
+        re.IGNORECASE
+    )
 
-        match = re.search(
-            r"\bAge\s*[/|]?\s*Gender"
-            r"\s*[:\-]?\s*"
-            r"(\d{1,3})"
-            r"\s*(?:Years?|Yrs?)?"
-            r"\s*[/|]\s*"
-            r"(?:Male|Female|M|F)\b",
-            normalized_text,
-            re.IGNORECASE
-        )
+    if age_gender_match:
 
-        if match:
-
-            age_value = match.group(1)
+        age_value = age_gender_match.group(1)
 
     # ----------------------------------------------------------
     # Extract numeric age
@@ -556,46 +721,57 @@ def extract_values(text):
     ])
 
     # ----------------------------------------------------------
-    # NEW ECG FORMAT
-    #
-    # Age / Gender: 20/Female
+    # Age / Gender format
     # ----------------------------------------------------------
 
-    if not gender_value:
+    gender_match = re.search(
+        r"\bAge\s*[/|]?\s*Gender"
+        r"\s*[:\-]?\s*"
+        r"\d{1,3}"
+        r"\s*(?:Years?|Yrs?)?"
+        r"\s*[/|]\s*"
+        r"(Male|Female|M|F)\b",
+        normalized_text,
+        re.IGNORECASE
+    )
 
-        match = re.search(
-            r"\bAge\s*[/|]?\s*Gender"
-            r"\s*[:\-]?\s*"
-            r"\d{1,3}"
-            r"\s*(?:Years?|Yrs?)?"
-            r"\s*[/|]\s*"
-            r"(Male|Female|M|F)\b",
-            normalized_text,
-            re.IGNORECASE
-        )
+    if gender_match:
 
-        if match:
-
-            gender_value = match.group(1)
+        gender_value = gender_match.group(1)
 
     if gender_value:
 
         gender = gender_value.lower().strip()
 
-        # Female first because "female" contains "male"
-        if re.search(r"\bfemale\b", gender):
+        # IMPORTANT:
+        # Check female BEFORE male because
+        # "female" contains "male"
+
+        if re.search(
+            r"\bfemale\b",
+            gender
+        ):
 
             data["sex"] = 0
 
-        elif re.search(r"\bmale\b", gender):
+        elif re.search(
+            r"\bmale\b",
+            gender
+        ):
 
             data["sex"] = 1
 
-        elif re.fullmatch(r"f", gender):
+        elif re.fullmatch(
+            r"f",
+            gender
+        ):
 
             data["sex"] = 0
 
-        elif re.fullmatch(r"m", gender):
+        elif re.fullmatch(
+            r"m",
+            gender
+        ):
 
             data["sex"] = 1
 
@@ -604,10 +780,6 @@ def extract_values(text):
     # ==========================================================
 
     report_date = None
-
-    # ----------------------------------------------------------
-    # Same-line format
-    # ----------------------------------------------------------
 
     match = re.search(
         r"\bReport\s+Date\s*[:\-]?\s*(.+?)"
@@ -619,10 +791,6 @@ def extract_values(text):
     if match:
 
         report_date = clean(match.group(1))
-
-    # ----------------------------------------------------------
-    # Multi-line format
-    # ----------------------------------------------------------
 
     if not report_date:
 
@@ -800,7 +968,6 @@ def extract_values(text):
     if heart_rate is not None:
 
         data["thalach"] = int(heart_rate)
-
         data["ecg_hr"] = int(heart_rate)
 
     # ==========================================================
@@ -844,17 +1011,13 @@ def extract_values(text):
 
         cp_text = chest_pain.lower().strip()
 
-        if (
-            "no typical angina" in cp_text
-            or cp_text in [
-                "no",
-                "none",
-                "not available",
-                "not reported"
-            ]
-        ):
+        # IMPORTANT:
+        # "Asymptomatic" must be checked before
+        # generic "no"
 
-            data["cp"] = None
+        if "asymptomatic" in cp_text:
+
+            data["cp"] = 3
 
         elif "atypical angina" in cp_text:
 
@@ -871,9 +1034,17 @@ def extract_values(text):
 
             data["cp"] = 2
 
-        elif "asymptomatic" in cp_text:
+        elif (
+            "no typical angina" in cp_text
+            or cp_text in [
+                "no",
+                "none",
+                "not available",
+                "not reported"
+            ]
+        ):
 
-            data["cp"] = 3
+            data["cp"] = None
 
     # ----------------------------------------------------------
     # Numeric CP
@@ -1066,16 +1237,45 @@ def extract_values(text):
             data["slope"] = int(match.group(1))
 
     # ==========================================================
-    # ECG ADDITIONAL VALUES
+    # ECG HEART RATE ADDITIONAL
     # ==========================================================
 
-    # ----------------------------------------------------------
-    # PR INTERVAL
-    # Supports:
+    # Some ECG machines print:
     #
-    # PR Interval: 138 ms
-    # PRI: 138ms
-    # ----------------------------------------------------------
+    # HR: 97bpm
+    #
+    # Make sure HR is also captured even when
+    # "Heart Rate" is not printed.
+
+    if "ecg_hr" not in data:
+
+        hr_match = re.search(
+            r"\bHR\s*[:\-]?\s*(\d{2,3})\s*bpm?",
+            normalized_text,
+            re.IGNORECASE
+        )
+
+        if hr_match:
+
+            try:
+
+                hr_value = int(hr_match.group(1))
+
+                if 30 <= hr_value <= 250:
+
+                    data["ecg_hr"] = hr_value
+
+                    if "thalach" not in data:
+
+                        data["thalach"] = hr_value
+
+            except ValueError:
+
+                pass
+
+    # ==========================================================
+    # PR INTERVAL
+    # ==========================================================
 
     pr_patterns = [
 
@@ -1099,12 +1299,9 @@ def extract_values(text):
 
         data["pr_interval"] = pr
 
-    # ----------------------------------------------------------
-    # QRS
-    #
-    # QRS Duration: 66 ms
-    # QRSD: 66ms
-    # ----------------------------------------------------------
+    # ==========================================================
+    # QRS DURATION
+    # ==========================================================
 
     qrs_patterns = [
 
@@ -1113,6 +1310,10 @@ def extract_values(text):
         r"(\d+(?:\.\d+)?)\s*ms",
 
         r"\bQRSD"
+        r"\s*[:\-]?\s*"
+        r"(\d+(?:\.\d+)?)\s*ms",
+
+        r"\bQRS"
         r"\s*[:\-]?\s*"
         r"(\d+(?:\.\d+)?)\s*ms"
 
@@ -1128,12 +1329,9 @@ def extract_values(text):
 
         data["qrs_duration"] = qrs
 
-    # ----------------------------------------------------------
-    # QT
-    #
-    # QT Interval: 336 ms
-    # QT: 336ms
-    # ----------------------------------------------------------
+    # ==========================================================
+    # QT INTERVAL
+    # ==========================================================
 
     qt_patterns = [
 
@@ -1157,12 +1355,9 @@ def extract_values(text):
 
         data["qt_interval"] = qt
 
-    # ----------------------------------------------------------
+    # ==========================================================
     # QTc
-    #
-    # QTcB: 427 ms
-    # QTc: 427 ms
-    # ----------------------------------------------------------
+    # ==========================================================
 
     qtc_patterns = [
 
@@ -1171,6 +1366,10 @@ def extract_values(text):
         r"(\d+(?:\.\d+)?)\s*ms",
 
         r"\bQTc"
+        r"\s*[:\-]?\s*"
+        r"(\d+(?:\.\d+)?)\s*ms",
+
+        r"\bQTcF"
         r"\s*[:\-]?\s*"
         r"(\d+(?:\.\d+)?)\s*ms"
 
@@ -1227,8 +1426,6 @@ def extract_values(text):
     # ==========================================================
     # P-R-T COMBINED AXIS
     #
-    # Example:
-    #
     # P-R-T: 36° 50° 28°
     #
     # P-R-T 36 50 28
@@ -1261,6 +1458,73 @@ def extract_values(text):
         except ValueError:
 
             pass
+
+    # ==========================================================
+    # ECG MACHINE FORMAT FALLBACKS
+    #
+    # Example:
+    #
+    # HR: 97bpm
+    # VR: 97bpm
+    # QRSD: 66ms
+    # QT: 336ms
+    # QTcB: 427ms
+    # PRI: 138ms
+    #
+    # P-R-T: 36° 50° 28°
+    # ==========================================================
+
+    machine_patterns = {
+
+        "ecg_hr": [
+            r"\bHR\s*[:\-]?\s*(\d{2,3})\s*bpm?"
+        ],
+
+        "vr": [
+            r"\bVR\s*[:\-]?\s*(\d{2,3})\s*bpm?"
+        ],
+
+        "qrs_duration": [
+            r"\bQRSD\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*ms"
+        ],
+
+        "pr_interval": [
+            r"\bPRI\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*ms"
+        ],
+
+        "qt_interval": [
+            r"\bQT\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*ms"
+        ],
+
+        "qtc": [
+            r"\bQTcB\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*ms"
+        ]
+
+    }
+
+    for field, patterns in machine_patterns.items():
+
+        if field in data:
+            continue
+
+        value = get_numeric(
+            patterns,
+            0,
+            1000
+        )
+
+        if value is not None:
+
+            if field in [
+                "ecg_hr",
+                "vr"
+            ]:
+
+                data[field] = int(value)
+
+            else:
+
+                data[field] = value
 
     # ==========================================================
     # DEFAULT VALUES
@@ -1304,6 +1568,7 @@ def extract_values(text):
         "p_axis": None,
         "r_axis": None,
         "t_axis": None
+
     }
 
     for key, default_value in defaults.items():

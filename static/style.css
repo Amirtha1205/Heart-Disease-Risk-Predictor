@@ -5624,3 +5624,30 @@ footer {
 .brand-highlight {
     color: #7136dc !important;
 }
+/* =========================================================
+   REVIEW PAGE - PREDICT BUTTON PURPLE THEME
+========================================================= */
+
+.review-main .btn-primary {
+    background: linear-gradient(
+        135deg,
+        #7136dc,
+        #9b42e8
+    ) !important;
+
+    border-color: #7136dc !important;
+    color: #ffffff !important;
+
+    box-shadow: 0 8px 20px rgba(113, 54, 220, 0.25);
+}
+
+.review-main .btn-primary:hover {
+    background: linear-gradient(
+        135deg,
+        #632bc9,
+        #8935d9
+    ) !important;
+
+    border-color: #632bc9 !important;
+    color: #ffffff !important;
+}

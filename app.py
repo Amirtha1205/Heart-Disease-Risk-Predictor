@@ -43,7 +43,6 @@ model = joblib.load("heart_model.pkl")
 # ============================================================
 
 try:
-
     model_info = joblib.load("heart_model_info.pkl")
 
 except FileNotFoundError:
@@ -62,7 +61,6 @@ except FileNotFoundError:
 # ============================================================
 
 FEATURES = [
-
     "age",
     "sex",
     "cp",
@@ -74,7 +72,6 @@ FEATURES = [
     "exang",
     "oldpeak",
     "slope"
-
 ]
 
 
@@ -106,6 +103,38 @@ def upload_page():
 
 
 # ============================================================
+# Helper - Check Valid Extracted Value
+# ============================================================
+
+def is_valid_extracted_value(value, key=None):
+
+    if value is None:
+        return False
+
+    if isinstance(value, str):
+
+        cleaned = value.strip().lower()
+
+        if cleaned in ["", "none", "not found", "n/a", "na"]:
+            return False
+
+    # These values should not normally be zero.
+    # Zero means the extractor did not find the value.
+    if key in ["trestbps", "chol", "thalach"]:
+
+        try:
+
+            if float(value) == 0:
+                return False
+
+        except (ValueError, TypeError):
+
+            return False
+
+    return True
+
+
+# ============================================================
 # Upload Medical Reports
 # ============================================================
 
@@ -118,15 +147,10 @@ def upload():
 
         return """
         <h3>No report uploaded.</h3>
-
-        <a href="/upload-page">
-            Go Back
-        </a>
+        <a href="/upload-page">Go Back</a>
         """
 
-
     merged_data = {}
-
 
     # ========================================================
     # Process Multiple Reports
@@ -136,7 +160,6 @@ def upload():
 
         if report.filename == "":
             continue
-
 
         # ----------------------------------------------------
         # Save Uploaded Report
@@ -149,13 +172,11 @@ def upload():
 
         report.save(filepath)
 
-
         # ----------------------------------------------------
         # OCR
         # ----------------------------------------------------
 
         text = read_report(filepath)
-
 
         # ----------------------------------------------------
         # Extract Values
@@ -163,24 +184,85 @@ def upload():
 
         data = extract_values(text)
 
+        # ----------------------------------------------------
+        # Print Individual Extraction
+        # ----------------------------------------------------
+
+        print("\n========================================")
+        print("EXTRACTED DATA")
+        print("========================================")
+
+        for key, value in data.items():
+
+            print(f"{key}: {value}")
+
+        print("========================================\n")
 
         # ----------------------------------------------------
         # Merge Extracted Data
+        #
+        # Only valid values are allowed to overwrite previous
+        # values. This prevents values such as:
+        #
+        # None
+        # Not Found
+        # 0
+        #
+        # from overwriting valid values from another report.
         # ----------------------------------------------------
 
         for key, value in data.items():
 
-            if value is not None:
+            if is_valid_extracted_value(value, key):
 
-                merged_data[key] = value
+                # Store if not already present
+                if key not in merged_data:
 
+                    merged_data[key] = value
+
+                # Replace only if the new value is valid
+                else:
+
+                    current_value = merged_data[key]
+
+                    if not is_valid_extracted_value(
+                        current_value,
+                        key
+                    ):
+
+                        merged_data[key] = value
 
     # ========================================================
-    # Print Extracted Data
+    # ECG Heart Rate Mapping
+    # ========================================================
+    #
+    # For your project test reports, if ECG HR exists and
+    # thalach is missing, use ECG HR.
+    #
+    # NOTE:
+    # Clinically, resting ECG heart rate and maximum heart
+    # rate achieved (thalach) are different measurements.
+    # This mapping is only for your synthetic/project reports.
+    # ========================================================
+
+    if (
+        not is_valid_extracted_value(
+            merged_data.get("thalach"),
+            "thalach"
+        )
+        and is_valid_extracted_value(
+            merged_data.get("ecg_hr")
+        )
+    ):
+
+        merged_data["thalach"] = merged_data["ecg_hr"]
+
+    # ========================================================
+    # Print Final Merged Data
     # ========================================================
 
     print("\n========================================")
-    print("EXTRACTED DATA")
+    print("FINAL MERGED DATA")
     print("========================================")
 
     for key, value in merged_data.items():
@@ -188,7 +270,6 @@ def upload():
         print(f"{key}: {value}")
 
     print("========================================\n")
-
 
     # ========================================================
     # Send Data To Review Page
@@ -213,14 +294,12 @@ def get_int_value(field_name):
         ""
     ).strip()
 
-
     if value == "":
         return np.nan
 
-
     try:
 
-        return int(value)
+        return int(float(value))
 
     except (ValueError, TypeError):
 
@@ -238,10 +317,8 @@ def get_float_value(field_name):
         ""
     ).strip()
 
-
     if value == "":
         return np.nan
-
 
     try:
 
@@ -253,26 +330,21 @@ def get_float_value(field_name):
 
 
 # ============================================================
-# Helper Function - Display Missing Values
+# Helper Function - Display Values
 # ============================================================
 
 def display_value(value):
 
     if value is None:
-
         return "Not Available"
-
 
     try:
 
         if pd.isna(value):
-
             return "Not Available"
 
     except Exception:
-
         pass
-
 
     return value
 
@@ -285,11 +357,9 @@ def find_missing_features(input_data):
 
     missing_features = []
 
-
     for feature in FEATURES:
 
         value = input_data.iloc[0][feature]
-
 
         # ----------------------------------------------------
         # None
@@ -298,9 +368,7 @@ def find_missing_features(input_data):
         if value is None:
 
             missing_features.append(feature)
-
             continue
-
 
         # ----------------------------------------------------
         # NaN
@@ -311,30 +379,26 @@ def find_missing_features(input_data):
             if pd.isna(value):
 
                 missing_features.append(feature)
-
                 continue
 
         except Exception:
-
             pass
 
-
         # ----------------------------------------------------
-        # Empty string
+        # Empty String
         # ----------------------------------------------------
 
-        if isinstance(value, str) and value.strip() == "":
+        if isinstance(value, str):
 
-            missing_features.append(feature)
+            if value.strip() == "":
 
-            continue
-
+                missing_features.append(feature)
+                continue
 
         # ----------------------------------------------------
         # Invalid default values
         #
-        # These fields cannot realistically be 0.
-        # Therefore 0 means missing in this application.
+        # These fields should not be zero in the application.
         # ----------------------------------------------------
 
         if feature in [
@@ -353,12 +417,11 @@ def find_missing_features(input_data):
 
                 missing_features.append(feature)
 
-
-    return missing_features
+    return list(dict.fromkeys(missing_features))
 
 
 # ============================================================
-# Helper Function - Convert Feature Names For Display
+# Helper Function - Feature Display Names
 # ============================================================
 
 def feature_display_name(feature):
@@ -397,13 +460,81 @@ def feature_display_name(feature):
 
         "slope":
             "ST Slope"
-
     }
-
 
     return names.get(
         feature,
         feature
+    )
+
+
+# ============================================================
+# Helper Function - Safely Get Model Probability
+# ============================================================
+
+def get_risk_probability(input_data, prediction_value):
+
+    # --------------------------------------------------------
+    # If model supports probability
+    # --------------------------------------------------------
+
+    if hasattr(model, "predict_proba"):
+
+        probabilities = model.predict_proba(
+            input_data
+        )[0]
+
+        classes = list(model.classes_)
+
+        # ----------------------------------------------------
+        # Find probability corresponding specifically to
+        # class 1 = Heart Disease
+        # ----------------------------------------------------
+
+        if 1 in classes:
+
+            risk_index = classes.index(1)
+
+            risk_probability = (
+                float(probabilities[risk_index]) * 100
+            )
+
+        else:
+
+            risk_probability = (
+                100.0
+                if int(prediction_value) == 1
+                else 0.0
+            )
+
+        confidence = (
+            float(max(probabilities)) * 100
+        )
+
+        return (
+            probabilities,
+            confidence,
+            risk_probability
+        )
+
+    # --------------------------------------------------------
+    # Model without predict_proba
+    # --------------------------------------------------------
+
+    probabilities = np.array([])
+
+    confidence = 100.0
+
+    risk_probability = (
+        100.0
+        if int(prediction_value) == 1
+        else 0.0
+    )
+
+    return (
+        probabilities,
+        confidence,
+        risk_probability
     )
 
 
@@ -416,14 +547,6 @@ def predict():
 
     global pdf_file_path
 
-
-    # ========================================================
-    # Reset Previous PDF
-    # ========================================================
-
-    pdf_file_path = None
-
-
     # ========================================================
     # Read Patient Information
     # ========================================================
@@ -433,30 +556,24 @@ def predict():
         "Not Found"
     ).strip()
 
-
     if patient_name == "":
         patient_name = "Not Found"
-
 
     hospital_name = request.form.get(
         "hospital_name",
         "Not Found"
     ).strip()
 
-
     if hospital_name == "":
         hospital_name = "Not Found"
-
 
     report_date = request.form.get(
         "report_date",
         "Not Found"
     ).strip()
 
-
     if report_date == "":
         report_date = "Not Found"
-
 
     # ========================================================
     # Read Clinical Values
@@ -483,7 +600,6 @@ def predict():
     oldpeak = get_float_value("oldpeak")
 
     slope = get_int_value("slope")
-
 
     # ========================================================
     # Create Model Input
@@ -515,79 +631,57 @@ def predict():
 
     }])
 
-
     # ========================================================
-    # Keep Exact Training Feature Order
+    # Exact Training Feature Order
     # ========================================================
 
     input_data = input_data[FEATURES]
 
-
     # ========================================================
-    # Print Input
+    # Print Input Data
     # ========================================================
 
     print("\n========================================")
     print("INPUT DATA")
     print("========================================")
-
     print(input_data)
-
     print("========================================\n")
 
-
     # ========================================================
-    # CHECK MISSING VALUES BEFORE PREDICTION
+    # Check Missing Features
     # ========================================================
 
     missing_features = find_missing_features(
         input_data
     )
 
-
     # ========================================================
-    # STOP PREDICTION IF DATA IS INCOMPLETE
+    # Stop Prediction If Data Is Incomplete
     # ========================================================
 
     if missing_features:
 
         missing_names = [
-
             feature_display_name(feature)
-
             for feature in missing_features
-
         ]
-
 
         print("\n========================================")
         print("PREDICTION STOPPED")
         print("========================================")
-
 
         print(
             "Missing ML Features:",
             ", ".join(missing_names)
         )
 
-
         print("========================================\n")
 
-
         error_message = (
-
             "Some required medical values are missing. "
-
             "Please enter or verify all required values "
-
             "before prediction."
-
         )
-
-
-        # ----------------------------------------------------
-        # Send back to Review Page
-        # ----------------------------------------------------
 
         review_data = {
 
@@ -632,27 +726,18 @@ def predict():
 
             "slope":
                 display_value(slope)
-
         }
 
-
         return render_template(
-
             "review.html",
-
             data=review_data,
-
             missing_features=missing_features,
-
             missing_feature_names=missing_names,
-
             error=error_message
-
         )
 
-
     # ========================================================
-    # FINAL NaN CHECK
+    # Final NaN Check
     # ========================================================
 
     if input_data.isnull().any().any():
@@ -661,36 +746,22 @@ def predict():
             "\nPrediction stopped because NaN values remain."
         )
 
-
         return render_template(
-
             "review.html",
-
             data=input_data.iloc[0].to_dict(),
-
             missing_features=FEATURES,
-
             missing_feature_names=[
-
                 feature_display_name(feature)
-
                 for feature in FEATURES
-
             ],
-
             error=(
-
                 "Invalid or incomplete medical data. "
-
                 "Please verify all required values."
-
             )
-
         )
 
-
     # ========================================================
-    # Prediction
+    # MODEL PREDICTION
     # ========================================================
 
     try:
@@ -701,9 +772,11 @@ def predict():
 
     except Exception as e:
 
-        print("\nPrediction Error:")
+        print("\n========================================")
+        print("PREDICTION ERROR")
+        print("========================================")
         print(e)
-
+        print("========================================\n")
 
         return """
         <h3>Prediction Error</h3>
@@ -718,62 +791,66 @@ def predict():
         </a>
         """
 
+    # Convert NumPy value to normal Python integer
+    prediction_value = int(prediction_value)
 
     # ========================================================
-    # Prediction Probability
+    # MODEL PROBABILITY
     # ========================================================
 
-    if hasattr(model, "predict_proba"):
+    (
+        probability_values,
+        confidence,
+        risk_probability
+    ) = get_risk_probability(
+        input_data,
+        prediction_value
+    )
 
-        probability_values = model.predict_proba(
-            input_data
-        )[0]
+    confidence = round(
+        confidence,
+        2
+    )
 
+    risk_probability = round(
+        risk_probability,
+        2
+    )
 
-        # ----------------------------------------------------
-        # Overall Model Confidence
-        # ----------------------------------------------------
+    # ========================================================
+    # IMPORTANT DEBUG OUTPUT
+    # ========================================================
 
-        confidence = round(
-            max(probability_values) * 100,
-            2
+    print("\n========================================")
+    print("MODEL PREDICTION:", prediction_value)
+
+    if hasattr(model, "classes_"):
+
+        print(
+            "MODEL CLASSES:",
+            model.classes_
         )
 
+    if len(probability_values) > 0:
 
-        # ----------------------------------------------------
-        # Heart Disease Probability
-        # Class 1 = Heart Disease
-        # ----------------------------------------------------
-
-        if len(probability_values) > 1:
-
-            risk_probability = round(
-                probability_values[1] * 100,
-                2
-            )
-
-        else:
-
-            risk_probability = (
-
-                100.0
-                if prediction_value == 1
-                else 0.0
-
-            )
-
-    else:
-
-        confidence = 0.0
-
-        risk_probability = (
-
-            100.0
-            if prediction_value == 1
-            else 0.0
-
+        print(
+            "MODEL PROBABILITIES:",
+            probability_values
         )
 
+    print(
+        "RISK PROBABILITY:",
+        risk_probability,
+        "%"
+    )
+
+    print(
+        "MODEL CONFIDENCE:",
+        confidence,
+        "%"
+    )
+
+    print("========================================\n")
 
     # ========================================================
     # Prediction Result
@@ -781,12 +858,19 @@ def predict():
 
     if prediction_value == 1:
 
-        prediction = "High Risk of Heart Disease"
+        prediction = (
+            "High Risk of Heart Disease"
+        )
+
+        risk_level = "High Risk"
 
     else:
 
-        prediction = "Low Risk of Heart Disease"
+        prediction = (
+            "Low Risk of Heart Disease"
+        )
 
+        risk_level = "Low Risk"
 
     # ========================================================
     # Model Information
@@ -797,18 +881,15 @@ def predict():
         "Random Forest"
     )
 
-
     best_accuracy = model_info.get(
         "best_accuracy_percent",
         0.0
     )
 
-
     algorithm_comparison = model_info.get(
         "algorithm_comparison",
         []
     )
-
 
     # ========================================================
     # Do Not Display Fake 0% Accuracy
@@ -834,16 +915,19 @@ def predict():
 
             best_accuracy_display = "Not Available"
 
-
     # ========================================================
-    # Print Prediction Result
+    # Print Final Prediction
     # ========================================================
 
     print("\n========================================")
-
     print(
         "Prediction:",
         prediction
+    )
+
+    print(
+        "Prediction Value:",
+        prediction_value
     )
 
     print(
@@ -869,7 +953,6 @@ def predict():
     )
 
     print("========================================\n")
-
 
     # ========================================================
     # Data For Result Page
@@ -918,9 +1001,7 @@ def predict():
 
         "slope":
             display_value(slope)
-
     }
-
 
     # ========================================================
     # Patient Data For PDF
@@ -944,19 +1025,14 @@ def predict():
 
             (
                 "Male"
-
                 if sex == 1
 
                 else
-
                 "Female"
-
                 if sex == 0
 
                 else
-
                 "Not Available"
-
             ),
 
         "Blood Pressure":
@@ -969,19 +1045,14 @@ def predict():
 
             (
                 "High"
-
                 if fbs == 1
 
                 else
-
                 "Normal"
-
                 if fbs == 0
 
                 else
-
                 "Not Available"
-
             ),
 
         "Heart Rate":
@@ -997,19 +1068,14 @@ def predict():
 
             (
                 "Yes"
-
                 if exang == 1
 
                 else
-
                 "No"
-
                 if exang == 0
 
                 else
-
                 "Not Available"
-
             ),
 
         "Oldpeak":
@@ -1017,73 +1083,55 @@ def predict():
 
         "Slope":
             display_value(slope)
-
     }
-
 
     # ========================================================
     # Generate PDF
+    # ========================================================
+    #
+    # Current report_generator.py uses:
+    #
+    # create_report(patient_data, prediction, probability)
+    #
+    # Therefore only these THREE arguments are passed.
     # ========================================================
 
     try:
 
         generated_pdf = create_report(
-
             patient_data,
-
             prediction_value,
-
             risk_probability
-
         )
 
-
         pdf_file_path = generated_pdf
-
 
         print("\n========================================")
         print("PDF generated successfully.")
         print("PDF Path:", pdf_file_path)
-        print("========================================")
-
+        print("========================================\n")
 
     except Exception as e:
 
         print("\n========================================")
         print("PDF Generation Error:")
         print(e)
-        print("========================================")
-
+        print("========================================\n")
 
         pdf_file_path = None
-
-
-    # ========================================================
-    # Check PDF Availability
-    # ========================================================
-
-    pdf_available = (
-
-        pdf_file_path is not None
-
-        and
-
-        os.path.isfile(pdf_file_path)
-
-    )
-
 
     # ========================================================
     # Result Page
     # ========================================================
 
     return render_template(
-
         "result.html",
 
         data=data,
 
-        prediction=prediction,
+        prediction=prediction_value,
+
+        risk_level=risk_level,
 
         probability=confidence,
 
@@ -1093,10 +1141,7 @@ def predict():
 
         best_accuracy=best_accuracy_display,
 
-        algorithm_comparison=algorithm_comparison,
-
-        pdf_available=pdf_available
-
+        algorithm_comparison=algorithm_comparison
     )
 
 
@@ -1108,7 +1153,6 @@ def predict():
 def download():
 
     global pdf_file_path
-
 
     if pdf_file_path is None:
 
@@ -1124,7 +1168,6 @@ def download():
         </a>
         """
 
-
     if not os.path.isfile(pdf_file_path):
 
         return """
@@ -1135,17 +1178,11 @@ def download():
         </a>
         """
 
-
     return send_file(
-
         pdf_file_path,
-
         as_attachment=True,
-
         download_name="Heart_Disease_Prediction_Report.pdf",
-
         mimetype="application/pdf"
-
     )
 
 
